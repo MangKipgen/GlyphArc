@@ -8,7 +8,7 @@ let params = {
   sampleFactor: 0.32,
   strokeColor: "#000000",
   shapeColor: "#FFFFFF",
-  bg: "#000000",
+  bg: "#4830DA",
   strokeWeight: 1,
   strokeCap: "round",
   fontFamily: "KnockoutE.otf",
@@ -220,7 +220,7 @@ function resetToDefault() {
   params.sampleFactor = 0.32;
   params.strokeColor = "#000000";
   params.shapeColor = "#FFFFFF";
-  params.bg = "#000000";
+  params.bg = "#4830DA";
   params.strokeWeight = 1;
   params.strokeCap = "round";
   params.fontFamily = "KnockoutE.otf";
