@@ -235,9 +235,9 @@ function resetToDefault() {
   updateLetter();
 }
 
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-}
+// function windowResized() {
+//   resizeCanvas(windowWidth, windowHeight);
+// }
 
 function doubleClicked() {
   image(cg, windowWidth, windowHeight);
