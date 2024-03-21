@@ -5,7 +5,7 @@ let pane;
 let params = {
   text: "a/",
   fontSize: 350,
-  sampleFactor: 0.32,
+  sampleFactor: 0.25,
   strokeColor: "#000000",
   shapeColor: "#FFFFFF",
   bg: "#4830DA",
@@ -162,24 +162,52 @@ function drawStrokePattern(x, y, w, h) {
     case "solid":
       rect(x, y, w, h);
       break;
-    case "dotted":
-      // Draw dotted pattern
-      let dotSize = 5;
-      let dotSpacing = 10;
-      for (let i = 0; i < w; i += dotSpacing) {
-        for (let j = 0; j < h; j += dotSpacing) {
-          ellipse(x + i, y + j, dotSize, dotSize);
-        }
-      }
-      break;
-    case "dashed":
-      // Draw dashed pattern
-      let dashLength = 10;
-      let dashSpacing = 5;
-      for (let i = 0; i < w; i += dashLength + dashSpacing) {
-        rect(x + i, y, dashLength, h);
-      }
-      break;
+    
+      
+      
+      case "dotted":
+  // Draw dotted pattern
+  let dotSize = 5;
+  let dotSpacing = 20;
+  
+  // Calculate the starting and ending coordinates based on the sign of w and h
+  let dotStartX = w >= 0 ? x : x + w;
+  let dotStartY = h >= 0 ? y : y + h;
+  let dotEndX = w >= 0 ? x + w : x;
+  let dotEndY = h >= 0 ? y + h : y;
+  
+  for (let dotX = dotStartX; dotX < dotEndX; dotX += dotSpacing) {
+    for (let dotY = dotStartY; dotY < dotEndY; dotY += dotSpacing) {
+      ellipse(dotX, dotY, dotSize, dotSize);
+    }
+  }
+  break;
+      
+      
+      
+      
+      
+      
+   case "dashed":
+  // Draw dashed pattern
+  let dashLength = 10;
+  let dashSpacing = 5;
+  let startX = x;
+  let endX = x + w;
+  let dashX = startX;
+
+  if (w < 0) {
+    startX = x + w;
+    endX = x;
+    dashX = startX;
+  }
+
+  while (dashX < endX) {
+    let dashWidth = Math.min(dashLength, endX - dashX);
+    rect(dashX, y, dashWidth, h);
+    dashX += dashLength + dashSpacing;
+  }
+  break;
   }
 }
 
@@ -217,7 +245,7 @@ function resetToDefault() {
   // Reset all parameters to their default values
   params.text = "a/";
   params.fontSize = 350;
-  params.sampleFactor = 0.32;
+  params.sampleFactor = 0.25;
   params.strokeColor = "#000000";
   params.shapeColor = "#FFFFFF";
   params.bg = "#4830DA";
