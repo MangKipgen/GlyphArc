@@ -38,7 +38,7 @@ function setup() {
   // Create folders for each group of options
   const textFolder = pane.addFolder({ title: "Text" });
   textFolder
-    .addInput(params, "text", { maxLength: 5 })
+    .addInput(params, "text", { maxLength: 10 })
     .on("change", updateLetter);
   textFolder
     .addInput(params, "fontFamily", {
