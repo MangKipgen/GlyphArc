@@ -12,8 +12,8 @@ let params = {
   strokeWeight: 1,
   strokeCap: "round",
   fontFamily: "KnockoutE.otf",
- angle: 0,
-  distance: 0,
+  noiseScale: 0.005,
+  noiseStrength: 10,
   strokePattern: "solid",
 };
 
@@ -28,9 +28,7 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-    cg = createGraphics(windowWidth, windowHeight); // for additional layer
-
-  
+  cg = createGraphics(windowWidth, windowHeight); // for additional layer
 
   // Create Tweakpane
   pane = new Tweakpane.Pane();
@@ -48,7 +46,6 @@ function setup() {
         KnockoutC: "KnockoutC.otf",
         KnockoutE: "KnockoutE.otf",
         RobotoS: "RobotoSlab-Black.ttf",
-        
       },
     })
     .on("change", updateLetter);
@@ -65,28 +62,30 @@ function setup() {
   colorFolder.addInput(params, "bg");
 
   const strokeFolder = pane.addFolder({ title: "Stroke" });
-strokeFolder.addInput(params, "strokeWeight", { min: 0.1, max: 3, step: 0.1 });
-strokeFolder.addInput(params, "strokePattern", {
-  options: { Solid: "solid", Dotted: "dotted", Dashed: "dashed" },
-});
+  strokeFolder.addInput(params, "strokeWeight", {
+    min: 0.1,
+    max: 3,
+    step: 0.1,
+  });
+  strokeFolder.addInput(params, "strokePattern", {
+    options: { Solid: "solid", Dotted: "dotted", Dashed: "dashed" },
+  });
 
-const displacementFolder = strokeFolder.addFolder({ title: "Displacement" });
-displacementFolder.addInput(params, "angle", {
-  min: 0,
-  max: 360,
-  step: 1,
-  description: "Controls the direction of displacement (in degrees)",
-});
-  
-  
-displacementFolder.addInput(params, "distance", {
-  min: 0,
-  max: 100,
-  step: 1,
-  description: "Controls the magnitude of displacement (in pixels)",
-});
-  
-  
+  const displacementFolder = strokeFolder.addFolder({ title: "Displacement" });
+  displacementFolder.addInput(params, "noiseScale", {
+    min: 0.001,
+    max: 0.1,
+    step: 0.001,
+    description: "Controls the scale of the noise field",
+  });
+
+  displacementFolder.addInput(params, "noiseStrength", {
+    min: 0,
+    max: 100,
+    step: 1,
+    description: "Controls the strength of the displacement",
+  });
+
   // Add a button to reset to the default state
   pane.addButton({ title: "Reset to Default" }).on("click", resetToDefault);
 
@@ -100,15 +99,15 @@ displacementFolder.addInput(params, "distance", {
       z-index: 1000;
     }
   `;
-  
+
   document.head.appendChild(style);
 
   updateLetter();
 }
 
 function updateLetter() {
-  // Limit the input to 5 letters
-  params.text = params.text.slice(0, 5);
+  // Limit the input to 10 letters
+  params.text = params.text.slice(0, 10);
 
   // Update the font size
   textSize(params.fontSize);
@@ -116,7 +115,6 @@ function updateLetter() {
   // Set the font based on the selected fontFamily
   let selectedFont;
   switch (params.fontFamily) {
-    
     case "GTFlexa.otf":
       selectedFont = flexa;
       break;
@@ -132,7 +130,6 @@ function updateLetter() {
     case "RobotoSlab-Black.ttf":
       selectedFont = robotoS;
       break;
-      
   }
 
   // Changing custom text to outlines for manipulation. sampleFactor = resolution
@@ -162,75 +159,70 @@ function drawStrokePattern(x, y, w, h) {
     case "solid":
       rect(x, y, w, h);
       break;
-    
-      
-      
-      case "dotted":
-  // Draw dotted pattern
-  let dotSize = 5;
-  let dotSpacing = 20;
-  
-  // Calculate the starting and ending coordinates based on the sign of w and h
-  let dotStartX = w >= 0 ? x : x + w;
-  let dotStartY = h >= 0 ? y : y + h;
-  let dotEndX = w >= 0 ? x + w : x;
-  let dotEndY = h >= 0 ? y + h : y;
-  
-  for (let dotX = dotStartX; dotX < dotEndX; dotX += dotSpacing) {
-    for (let dotY = dotStartY; dotY < dotEndY; dotY += dotSpacing) {
-      ellipse(dotX, dotY, dotSize, dotSize);
-    }
-  }
-  break;
-      
-      
-      
-      
-      
-      
-   case "dashed":
-  // Draw dashed pattern
-  let dashLength = 10;
-  let dashSpacing = 5;
-  let startX = x;
-  let endX = x + w;
-  let dashX = startX;
 
-  if (w < 0) {
-    startX = x + w;
-    endX = x;
-    dashX = startX;
-  }
+    case "dotted":
+      // Draw dotted pattern
+      let dotSize = 5;
+      let dotSpacing = 20;
 
-  while (dashX < endX) {
-    let dashWidth = Math.min(dashLength, endX - dashX);
-    rect(dashX, y, dashWidth, h);
-    dashX += dashLength + dashSpacing;
-  }
-  break;
+      // Calculate the starting and ending coordinates based on the sign of w and h
+      let dotStartX = w >= 0 ? x : x + w;
+      let dotStartY = h >= 0 ? y : y + h;
+      let dotEndX = w >= 0 ? x + w : x;
+      let dotEndY = h >= 0 ? y + h : y;
+
+      for (let dotX = dotStartX; dotX < dotEndX; dotX += dotSpacing) {
+        for (let dotY = dotStartY; dotY < dotEndY; dotY += dotSpacing) {
+          ellipse(dotX, dotY, dotSize, dotSize);
+        }
+      }
+      break;
+
+    case "dashed":
+      // Draw dashed pattern
+      let dashLength = 10;
+      let dashSpacing = 5;
+      let startX = x;
+      let endX = x + w;
+      let dashX = startX;
+
+      if (w < 0) {
+        startX = x + w;
+        endX = x;
+        dashX = startX;
+      }
+
+      while (dashX < endX) {
+        let dashWidth = Math.min(dashLength, endX - dashX);
+        rect(dashX, y, dashWidth, h);
+        dashX += dashLength + dashSpacing;
+      }
+      break;
   }
 }
 
 function draw() {
   background(params.bg);
 
-   
-  
-  
   for (let i = 0; i < aArray.length; i++) {
+    let point = aArray[i];
+
+    // Calculate the displacement based on Perlin noise
+    let noiseValue = noise(
+      point.x * params.noiseScale,
+      point.y * params.noiseScale,
+      frameCount * 0.01
+    );
+    let angle = noiseValue * TWO_PI;
+    let displacement = p5.Vector.fromAngle(angle).mult(params.noiseStrength);
+
     // Calculate the width and height of the rectangle based on the mouse position
     let rectWidth = mouseX - width / 2;
     let rectHeight = mouseY - height / 2;
 
-    // Calculate the displacement values
-    let displaceX =
-      params.distance * cos(params.angle + noise(i * 0.1, frameCount * 0.01));
-     let displaceY =
-      params.distance * sin(params.angle + noise(i * 0.1, frameCount * 0.01));
-
     // Calculate the position of the rectangle based on the center of the shape and displacement
-    let rectX = aArray[i].x - rectWidth / 2 + displaceX;
-    let rectY = aArray[i].y - rectHeight / 2 + displaceY;
+    let rectX = point.x - rectWidth / 2 + displacement.x;
+    let rectY = point.y - rectHeight / 2 + displacement.y;
 
     stroke(params.strokeColor);
     strokeWeight(params.strokeWeight);
@@ -252,8 +244,8 @@ function resetToDefault() {
   params.strokeWeight = 1;
   params.strokeCap = "round";
   params.fontFamily = "KnockoutE.otf";
-  params.angle = 0;
-  params.distance = 0;
+  params.noiseScale = 0.005;
+  params.noiseStrength = 10;
   params.strokePattern = "solid";
 
   // Update the Tweakpane inputs with the default values
