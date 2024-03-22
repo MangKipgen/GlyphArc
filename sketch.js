@@ -13,7 +13,7 @@ let params = {
   strokeCap: "round",
   fontFamily: "KnockoutE.otf",
   noiseScale: 0.005,
-  noiseStrength: 10,
+  noiseStrength: 0,
   strokePattern: "solid",
 };
 
@@ -245,7 +245,7 @@ function resetToDefault() {
   params.strokeCap = "round";
   params.fontFamily = "KnockoutE.otf";
   params.noiseScale = 0.005;
-  params.noiseStrength = 10;
+  params.noiseStrength = 0;
   params.strokePattern = "solid";
 
   // Update the Tweakpane inputs with the default values
