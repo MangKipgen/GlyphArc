@@ -244,7 +244,7 @@ function resetToDefault() {
   params.strokeWeight = 1;
   params.strokeCap = "round";
   params.fontFamily = "KnockoutE.otf";
-  params.noiseScale = 0.005;
+  params.noiseScale = 0.000;
   params.noiseStrength = 0;
   params.strokePattern = "solid";
 
