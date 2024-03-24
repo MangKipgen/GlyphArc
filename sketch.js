@@ -230,6 +230,12 @@ function draw() {
     fill(params.shapeColor);
 
     drawStrokePattern(rectX, rectY, rectWidth, rectHeight);
+
+    
+    fill(255); 
+    textSize(10); 
+    textAlign(LEFT, BOTTOM); 
+    text("DOUBLE CLICK TO SAVE", 10, height - 10); 
   }
 }
 
