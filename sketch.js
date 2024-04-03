@@ -8,12 +8,12 @@ let params = {
   sampleFactor: 0.25,
   strokeColor: "#000000",
   shapeColor: "#FFFFFF",
-  bg: "#4830DA",
+  bgColor: "#4830DA",
   strokeWeight: 1,
   strokeCap: "round",
   fontFamily: "KnockoutE.otf",
-  noiseScale: 0.005,
-  noiseStrength: 0,
+  Scale: 0.000,
+  Strength: 0,
   strokeType: "solid",
 };
 
@@ -61,7 +61,7 @@ function setup() {
   const colorFolder = pane.addFolder({ title: "Colors" });
   colorFolder.addInput(params, "strokeColor");
   colorFolder.addInput(params, "shapeColor");
-  colorFolder.addInput(params, "bg");
+  colorFolder.addInput(params, "bgColor");
 
   const strokeFolder = pane.addFolder({ title: "Stroke" });
   strokeFolder.addInput(params, "strokeWeight", {
@@ -74,18 +74,18 @@ function setup() {
   });
 
   const displacementFolder = strokeFolder.addFolder({ title: "Displacement" });
-  displacementFolder.addInput(params, "noiseScale", {
+  displacementFolder.addInput(params, "Scale", {
     min: 0.001,
     max: 0.1,
     step: 0.001,
     description: "Controls the scale of the noise field",
   });
 
-  displacementFolder.addInput(params, "noiseStrength", {
+  displacementFolder.addInput(params, "Strength", {
     min: 0,
     max: 100,
     step: 1,
-    description: "Controls the strength of the displacement",
+    description: "Controls the Strength of the displacement",
   });
 
   // Add a button to reset to the default state
@@ -204,19 +204,19 @@ function drawStrokePattern(x, y, w, h) {
 }
 
 function draw() {
-  background(params.bg);
+  background(params.bgColor);
 
   for (let i = 0; i < aArray.length; i++) {
     let point = aArray[i];
 
     // Calculate the displacement based on Perlin noise
     let noiseValue = noise(
-      point.x * params.noiseScale,
-      point.y * params.noiseScale,
+      point.x * params.Scale,
+      point.y * params.Scale,
       frameCount * 0.01
     );
     let angle = noiseValue * TWO_PI;
-    let displacement = p5.Vector.fromAngle(angle).mult(params.noiseStrength);
+    let displacement = p5.Vector.fromAngle(angle).mult(params.Strength);
 
     // Calculate the width and height of the rectangle based on the mouse position
     let rectWidth = mouseX - width / 2;
@@ -247,13 +247,13 @@ function resetToDefault() {
   params.sampleFactor = 0.25;
   params.strokeColor = "#000000";
   params.shapeColor = "#FFFFFF";
-  params.bg = "#4830DA";
+  params.bgColor = "#4830DA";
   params.strokeWeight = 1;
   params.strokeCap = "round";
   params.fontFamily = "KnockoutE.otf";
-  params.noiseScale = 0.005;
-  params.noiseStrength = 0;
-  params.strokePattern = "solid";
+  params.Scale = 0.000;
+  params.Strength = 0;
+  params.strokeType = "solid";
 
   // Update the Tweakpane inputs with the default values
   pane.refresh();
