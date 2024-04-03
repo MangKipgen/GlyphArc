@@ -14,7 +14,7 @@ let params = {
   fontFamily: "KnockoutE.otf",
   noiseScale: 0.005,
   noiseStrength: 0,
-  strokePattern: "solid",
+  strokeType: "solid",
 };
 
 // Load custom fonts
@@ -29,6 +29,8 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   cg = createGraphics(windowWidth, windowHeight); // for additional layer
+
+  text("hi", windowWidth / 4, windowHeight / 4);
 
   // Create Tweakpane
   pane = new Tweakpane.Pane();
@@ -67,7 +69,7 @@ function setup() {
     max: 3,
     step: 0.1,
   });
-  strokeFolder.addInput(params, "strokePattern", {
+  strokeFolder.addInput(params, "strokeType", {
     options: { Solid: "solid", Dotted: "dotted", Dashed: "dashed" },
   });
 
@@ -94,7 +96,7 @@ function setup() {
   style.innerHTML = `
     .tp-dfwv {
       position: fixed;
-      top: 10px;
+      bottom: 10px;
       right: 10px;
       z-index: 1000;
     }
@@ -155,7 +157,7 @@ function centerLetter(font) {
 }
 
 function drawStrokePattern(x, y, w, h) {
-  switch (params.strokePattern) {
+  switch (params.strokeType) {
     case "solid":
       rect(x, y, w, h);
       break;
@@ -231,11 +233,10 @@ function draw() {
 
     drawStrokePattern(rectX, rectY, rectWidth, rectHeight);
 
-    
-    fill(255); 
-    textSize(10); 
-    textAlign(LEFT, BOTTOM); 
-    text("DOUBLE CLICK TO SAVE", 10, height - 10); 
+    fill(255); // Set the text color to white
+    textSize(10);
+    textAlign(LEFT, BOTTOM);
+    text("DOUBLE CLICK TO SAVE", 10, height - 10);
   }
 }
 
@@ -250,7 +251,7 @@ function resetToDefault() {
   params.strokeWeight = 1;
   params.strokeCap = "round";
   params.fontFamily = "KnockoutE.otf";
-  params.noiseScale = 0.000;
+  params.noiseScale = 0.005;
   params.noiseStrength = 0;
   params.strokePattern = "solid";
 
