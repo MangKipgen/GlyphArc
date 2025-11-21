@@ -1,7 +1,7 @@
-let flexa, knockoutC, knockoutE, futuraB, robotoS;
-let aArray;
+let aArray = [];
 let cg;
 let pane;
+let currentFont;
 let params = {
   text: "a/",
   fontSize: 350,
@@ -11,20 +11,12 @@ let params = {
   bgColor: "#4830DA",
   strokeWeight: 1,
   strokeCap: "round",
-  fontFamily: "KnockoutE.otf",
+  fontFamily: "Bebas Neue",
   Scale: 0.000,
   Strength: 0,
   strokeType: "solid",
+  cornerRounding: 1,
 };
-
-// Load custom fonts
-function preload() {
-  flexa = loadFont("GTFlexa.otf");
-  futuraB = loadFont("Future Bold.ttf");
-  knockoutC = loadFont("KnockoutC.otf");
-  knockoutE = loadFont("KnockoutE.otf");
-  robotoS = loadFont("RobotoSlab-Black.ttf");
-}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -43,11 +35,30 @@ function setup() {
   textFolder
     .addInput(params, "fontFamily", {
       options: {
-        FuturaB: "Future Bold.ttf",
-        GTFlexa: "GTFlexa.otf",
-        KnockoutC: "KnockoutC.otf",
-        KnockoutE: "KnockoutE.otf",
-        RobotoS: "RobotoSlab-Black.ttf",
+        "Inter": "Inter",
+        "Roboto": "Roboto",
+        "Montserrat": "Montserrat",
+        "Work Sans": "Work Sans",
+        "Open Sans": "Open Sans",
+        "Poppins": "Poppins",
+        "Playfair Display": "Playfair Display",
+        "Merriweather": "Merriweather",
+        "Lora": "Lora",
+        "Crimson Text": "Crimson Text",
+        "EB Garamond": "EB Garamond",
+        "Bebas Neue": "Bebas Neue",
+        "Oswald": "Oswald",
+        "Righteous": "Righteous",
+        "Alfa Slab One": "Alfa Slab One",
+        "Rubik Mono One": "Rubik Mono One",
+        "Roboto Mono": "Roboto Mono",
+        "Source Code Pro": "Source Code Pro",
+        "JetBrains Mono": "JetBrains Mono",
+        "IBM Plex Mono": "IBM Plex Mono",
+        "Pacifico": "Pacifico",
+        "Dancing Script": "Dancing Script",
+        "Great Vibes": "Great Vibes",
+        "Satisfy": "Satisfy",
       },
     })
     .on("change", updateLetter);
@@ -71,6 +82,11 @@ function setup() {
   });
   strokeFolder.addInput(params, "strokeType", {
     options: { Solid: "solid", Dotted: "dotted", Dashed: "dashed" },
+  });
+  strokeFolder.addInput(params, "cornerRounding", {
+    min: 1,
+    max: 10,
+    step: 1,
   });
 
   const displacementFolder = strokeFolder.addFolder({ title: "Displacement" });
@@ -114,33 +130,67 @@ function updateLetter() {
   // Update the font size
   textSize(params.fontSize);
 
-  // Set the font based on the selected fontFamily
-  let selectedFont;
-  switch (params.fontFamily) {
-    case "GTFlexa.otf":
-      selectedFont = flexa;
-      break;
-    case "KnockoutC.otf":
-      selectedFont = knockoutC;
-      break;
-    case "KnockoutE.otf":
-      selectedFont = knockoutE;
-      break;
-    case "Future Bold.ttf":
-      selectedFont = futuraB;
-      break;
-    case "RobotoSlab-Black.ttf":
-      selectedFont = robotoS;
-      break;
-  }
+  // Load the selected Google Font and convert to points
+  // Using textFont with the font family name for rendering
+  textFont(params.fontFamily);
 
+  // For textToPoints, we need to load the font file
+  // This is a workaround - load font asynchronously and update when ready
+  if (!currentFont || currentFont.fontFamily !== params.fontFamily) {
+    loadFont(getFontUrl(params.fontFamily), (font) => {
+      currentFont = font;
+      currentFont.fontFamily = params.fontFamily;
+      generatePoints();
+    });
+  } else {
+    generatePoints();
+  }
+}
+
+function getFontUrl(fontName) {
+  // Map Google Font names to their CDN URLs
+  const fontUrls = {
+    // Sans Serif
+    "Inter": "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hiA.ttf",
+    "Roboto": "https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9fCRc4AMP6lbBP.ttf",
+    "Montserrat": "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCvC73w0aXpsog.ttf",
+    "Work Sans": "https://fonts.gstatic.com/s/worksans/v19/QGY_z_wNahGAdqQ43RhVcIgYT2Xz5u32K0nWNigDp6_cOyA.ttf",
+    "Open Sans": "https://fonts.gstatic.com/s/opensans/v40/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4nY1M2xLER.ttf",
+    "Poppins": "https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLDD4Z1JlFc-K.ttf",
+    // Serif
+    "Playfair Display": "https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDZbtY.ttf",
+    "Merriweather": "https://fonts.gstatic.com/s/merriweather/v30/u-4n0qyriQwlOrhSvowK_l521wRZWMf6hPvhPUWH.ttf",
+    "Lora": "https://fonts.gstatic.com/s/lora/v35/0QI6MX1D_JOuGQbT0gvTJPa787weuyJGmKxemMeZ.ttf",
+    "Crimson Text": "https://fonts.gstatic.com/s/crimsontext/v19/wlppgwHKFkZgtmSR3NB0oRJfbwhT.ttf",
+    "EB Garamond": "https://fonts.gstatic.com/s/ebgaramond/v27/SlGDmQSNjdsmc35JDF1K5E55YMjF_7DPuGi-6_RUA4V-e6yHgQ.ttf",
+    // Display
+    "Bebas Neue": "https://fonts.gstatic.com/s/bebasneue/v14/JTUSjIg69CK48gW7PXooxW5rygbi49c.ttf",
+    "Oswald": "https://fonts.gstatic.com/s/oswald/v53/TK3_WkUHHAIjg75cFRf3bXL8LICs1_FvsUZiZQ.ttf",
+    "Righteous": "https://fonts.gstatic.com/s/righteous/v17/1cXxaUPXBpj2rGoU7C9mj3uEicG01A.ttf",
+    "Alfa Slab One": "https://fonts.gstatic.com/s/alfaslabone/v19/6NUQ8FmMKwSEKjnm5-4v-4Jh6dVretWvYmE.ttf",
+    "Rubik Mono One": "https://fonts.gstatic.com/s/rubikmonoone/v18/UqyJK8kPP3hjw6ANTdfRk9YSN-8wRqQrc_j9.ttf",
+    // Mono
+    "Roboto Mono": "https://fonts.gstatic.com/s/robotomono/v23/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vqPQ--5Ip2sSQ.ttf",
+    "Source Code Pro": "https://fonts.gstatic.com/s/sourcecodepro/v23/HI_diYsKILxRpg3hIP6sJ7fM7PqPMcMnZFqUwX28DMyQtMlrQA6H.ttf",
+    "JetBrains Mono": "https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxTOlOVkA.ttf",
+    "IBM Plex Mono": "https://fonts.gstatic.com/s/ibmplexmono/v19/-F6pfjptAgt5VM-kVkqdyU8n3kwq0n1hj-sNFQ.ttf",
+    // Script
+    "Pacifico": "https://fonts.gstatic.com/s/pacifico/v22/FwZY7-Qmy14u9lezJ96A4sijpFu_.ttf",
+    "Dancing Script": "https://fonts.gstatic.com/s/dancingscript/v25/If2cXTr6YS-zF4S-kcSWSVi_sxjsohD9F50Ruu7BMSoHTeB9ptDqpw.ttf",
+    "Great Vibes": "https://fonts.gstatic.com/s/greatvibes/v19/RWmMoKWR9v4ksMfaWd_JN-XCg6UKDXlq.ttf",
+    "Satisfy": "https://fonts.gstatic.com/s/satisfy/v21/rP2Hp2yn6lkG50LoOZSCHBeHFl0.ttf",
+  };
+  return fontUrls[fontName];
+}
+
+function generatePoints() {
   // Changing custom text to outlines for manipulation. sampleFactor = resolution
-  aArray = selectedFont.textToPoints(params.text, 0, 0, params.fontSize, {
+  aArray = currentFont.textToPoints(params.text, 0, 0, params.fontSize, {
     sampleFactor: params.sampleFactor,
   });
 
   // Center the letter
-  centerLetter(selectedFont);
+  centerLetter(currentFont);
 }
 
 function centerLetter(font) {
@@ -157,9 +207,25 @@ function centerLetter(font) {
 }
 
 function drawStrokePattern(x, y, w, h) {
+  // Map corner rounding from 1-10 to 0-50 pixels
+  let cornerRadius = map(params.cornerRounding, 1, 10, 0, 50);
+
+  // Normalize rectangle to have positive dimensions
+  let normX = w >= 0 ? x : x + w;
+  let normY = h >= 0 ? y : y + h;
+  let normW = abs(w);
+  let normH = abs(h);
+
+  // Adjust for stroke so it doesn't extend beyond bounds
+  let sw = params.strokeWeight;
+  let adjustedX = normX + sw/2;
+  let adjustedY = normY + sw/2;
+  let adjustedW = normW - sw;
+  let adjustedH = normH - sw;
+
   switch (params.strokeType) {
     case "solid":
-      rect(x, y, w, h);
+      rect(adjustedX, adjustedY, adjustedW, adjustedH, cornerRadius);
       break;
 
     case "dotted":
@@ -168,10 +234,10 @@ function drawStrokePattern(x, y, w, h) {
       let dotSpacing = 20;
 
       // Calculate the starting and ending coordinates based on the sign of w and h
-      let dotStartX = w >= 0 ? x : x + w;
-      let dotStartY = h >= 0 ? y : y + h;
-      let dotEndX = w >= 0 ? x + w : x;
-      let dotEndY = h >= 0 ? y + h : y;
+      let dotStartX = adjustedW >= 0 ? adjustedX : adjustedX + adjustedW;
+      let dotStartY = adjustedH >= 0 ? adjustedY : adjustedY + adjustedH;
+      let dotEndX = adjustedW >= 0 ? adjustedX + adjustedW : adjustedX;
+      let dotEndY = adjustedH >= 0 ? adjustedY + adjustedH : adjustedY;
 
       for (let dotX = dotStartX; dotX < dotEndX; dotX += dotSpacing) {
         for (let dotY = dotStartY; dotY < dotEndY; dotY += dotSpacing) {
@@ -184,19 +250,19 @@ function drawStrokePattern(x, y, w, h) {
       // Draw dashed pattern
       let dashLength = 10;
       let dashSpacing = 5;
-      let startX = x;
-      let endX = x + w;
+      let startX = adjustedX;
+      let endX = adjustedX + adjustedW;
       let dashX = startX;
 
-      if (w < 0) {
-        startX = x + w;
-        endX = x;
+      if (adjustedW < 0) {
+        startX = adjustedX + adjustedW;
+        endX = adjustedX;
         dashX = startX;
       }
 
       while (dashX < endX) {
         let dashWidth = Math.min(dashLength, endX - dashX);
-        rect(dashX, y, dashWidth, h);
+        rect(dashX, adjustedY, dashWidth, adjustedH, cornerRadius);
         dashX += dashLength + dashSpacing;
       }
       break;
@@ -250,10 +316,11 @@ function resetToDefault() {
   params.bgColor = "#4830DA";
   params.strokeWeight = 1;
   params.strokeCap = "round";
-  params.fontFamily = "KnockoutE.otf";
+  params.fontFamily = "Bebas Neue";
   params.Scale = 0.000;
   params.Strength = 0;
   params.strokeType = "solid";
+  params.cornerRounding = 1;
 
   // Update the Tweakpane inputs with the default values
   pane.refresh();
