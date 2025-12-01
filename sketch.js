@@ -2,6 +2,8 @@ let aArray = [];
 let cg;
 let pane;
 let currentFont;
+let clickCount = 0;
+let clickTimer;
 let params = {
   text: "a/",
   fontSize: 350,
@@ -16,6 +18,7 @@ let params = {
   Strength: 0,
   strokeType: "solid",
   cornerRounding: 1,
+  loopDuration: 1800,
 };
 
 function setup() {
@@ -30,10 +33,11 @@ function setup() {
   // Create folders for each group of options
   const textFolder = pane.addFolder({ title: "Text" });
   textFolder
-    .addInput(params, "text", { maxLength: 10 })
+    .addInput(params, "text", { label: "Text", maxLength: 10 })
     .on("change", updateLetter);
   textFolder
     .addInput(params, "fontFamily", {
+      label: "Font",
       options: {
         "Inter": "Inter",
         "Roboto": "Roboto",
@@ -63,34 +67,38 @@ function setup() {
     })
     .on("change", updateLetter);
   textFolder
-    .addInput(params, "fontSize", { min: 100, max: 1000, step: 10 })
+    .addInput(params, "fontSize", { label: "Size", min: 100, max: 1000, step: 10 })
     .on("change", updateLetter);
   textFolder
-    .addInput(params, "sampleFactor", { min: 0.1, max: 1, step: 0.01 })
+    .addInput(params, "sampleFactor", { label: "Sample", min: 0.1, max: 1, step: 0.01 })
     .on("change", updateLetter);
 
   const colorFolder = pane.addFolder({ title: "Colors" });
-  colorFolder.addInput(params, "strokeColor");
-  colorFolder.addInput(params, "shapeColor");
-  colorFolder.addInput(params, "bgColor");
+  colorFolder.addInput(params, "strokeColor", { label: "Stroke" });
+  colorFolder.addInput(params, "shapeColor", { label: "Shape" });
+  colorFolder.addInput(params, "bgColor", { label: "BG" });
 
   const strokeFolder = pane.addFolder({ title: "Stroke" });
   strokeFolder.addInput(params, "strokeWeight", {
+    label: "Weight",
     min: 0.1,
     max: 3,
     step: 0.1,
   });
   strokeFolder.addInput(params, "strokeType", {
+    label: "Type",
     options: { Solid: "solid", Dotted: "dotted", Dashed: "dashed" },
   });
   strokeFolder.addInput(params, "cornerRounding", {
+    label: "Corner",
     min: 1,
     max: 10,
     step: 1,
   });
 
-  const displacementFolder = strokeFolder.addFolder({ title: "Displacement" });
+  const displacementFolder = pane.addFolder({ title: "Displacement" });
   displacementFolder.addInput(params, "Scale", {
+    label: "Scale",
     min: 0.001,
     max: 0.1,
     step: 0.001,
@@ -98,10 +106,19 @@ function setup() {
   });
 
   displacementFolder.addInput(params, "Strength", {
+    label: "Strength",
     min: 0,
     max: 100,
     step: 1,
-    description: "Controls the Strength of the displacement",
+    description: "Controls the strength of the displacement",
+  });
+
+  displacementFolder.addInput(params, "loopDuration", {
+    label: "Loop",
+    min: 300,
+    max: 3600,
+    step: 100,
+    description: "Duration of one loop cycle in frames",
   });
 
   // Add a button to reset to the default state
@@ -272,14 +289,20 @@ function drawStrokePattern(x, y, w, h) {
 function draw() {
   background(params.bgColor);
 
+  // Create circular sampling for seamless loop
+  let loopProgress = (frameCount % params.loopDuration) / params.loopDuration;
+  let noiseTimeX = cos(loopProgress * TWO_PI) * 2;
+  let noiseTimeY = sin(loopProgress * TWO_PI) * 2;
+
   for (let i = 0; i < aArray.length; i++) {
     let point = aArray[i];
 
-    // Calculate the displacement based on Perlin noise
+    // Calculate the displacement based on Perlin noise with circular sampling
     let noiseValue = noise(
       point.x * params.Scale,
       point.y * params.Scale,
-      frameCount * 0.01
+      noiseTimeX,
+      noiseTimeY
     );
     let angle = noiseValue * TWO_PI;
     let displacement = p5.Vector.fromAngle(angle).mult(params.Strength);
@@ -302,7 +325,7 @@ function draw() {
     fill(255); // Set the text color to white
     textSize(10);
     textAlign(LEFT, BOTTOM);
-    text("DOUBLE CLICK TO SAVE", 10, height - 10);
+    text("TRIPLE CLICK TO SAVE", 10, height - 10);
   }
 }
 
@@ -321,6 +344,7 @@ function resetToDefault() {
   params.Strength = 0;
   params.strokeType = "solid";
   params.cornerRounding = 1;
+  params.loopDuration = 1800;
 
   // Update the Tweakpane inputs with the default values
   pane.refresh();
@@ -333,7 +357,21 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-function doubleClicked() {
-  image(cg, windowWidth, windowHeight);
-  saveCanvas("GlyphArc.jpg");
+function mousePressed() {
+  clickCount++;
+
+  // Clear existing timer
+  clearTimeout(clickTimer);
+
+  // Set new timer - if no click within 400ms, reset count
+  clickTimer = setTimeout(() => {
+    clickCount = 0;
+  }, 400);
+
+  // If triple click detected, save canvas
+  if (clickCount === 3) {
+    image(cg, windowWidth, windowHeight);
+    saveCanvas("GlyphArc.jpg");
+    clickCount = 0;
+  }
 }
